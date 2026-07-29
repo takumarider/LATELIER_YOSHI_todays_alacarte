@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'failed' => '認証に失敗しました。',
+    'password' => 'パスワードが正しくありません。',
+    'throttle' => ':seconds 秒後に再試行してください。',
+    'login' => 'ログイン',
+    'log_in' => 'ログイン',
+    'log_out' => 'ログアウト',
+    'register' => '登録',
+    'forgot_password' => 'パスワードをお忘れですか？',
+    'forgot_your_password' => 'パスワードをお忘れですか？',
+    'reset_password' => 'パスワード再設定',
+    'confirm_password' => 'パスワード確認',
+    'already_registered' => '登録済みですか？',
+    'name' => '名前',
+    'email' => 'メールアドレス',
+    'confirm' => '確認',
+    'remember_me' => 'ログイン状態を保持する',
+    'remember' => 'ログイン状態を保持する',
+    'verify_email' => 'メールアドレス確認',
+    'verify_email_address' => 'メールアドレス確認',
+    'verification_link_sent' => '確認リンクを送信しました。',
+    'new_verification_link_sent' => '新しい確認リンクを送信しました。',
+];

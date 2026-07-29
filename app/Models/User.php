@@ -3,9 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
@@ -22,6 +25,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'nickname',
+        'phone',
     ];
 
     /**
@@ -44,6 +50,28 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
         ];
+    }
+
+    /**
+     * Send the password reset notification.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        ResetPassword::toMailUsing(function ($notifiable, $token) {
+            return (new MailMessage)
+                ->subject('パスワード再設定のお知らせ')
+                ->line('パスワード再設定のご依頼をいただきました。')
+                ->line('お手数ですが、下のボタンから新しいパスワードをご設定ください。')
+                ->action('パスワードを再設定する', url(route('password.reset', [
+                    'token' => $token,
+                    'email' => $notifiable->getEmailForPasswordReset(),
+                ], false)))
+                ->line('このリンクは :count 分間のみ有効です。', ['count' => config('auth.passwords.users.expire') / 60])
+                ->line('もしこのメールに心当たりがない場合は、そのまま破棄していただいて問題ございません。');
+        });
+
+        $this->notify(new ResetPassword($token));
     }
 }
