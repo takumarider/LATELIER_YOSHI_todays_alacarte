@@ -27,9 +27,15 @@ class ProductResource extends Resource
                 Forms\Components\TextInput::make('price')
                     ->label('価格')
                     ->required()
-                    ->numeric()
+                    ->integer()
                     ->prefix('¥')
-                    ->step(100),
+                    ->minValue(100)
+                    ->step(100)
+                    ->rules([
+                        fn ($attribute, $value, $fail) => $value !== null && $value % 100 !== 0
+                            ? $fail('価格は100円単位で入力してください。')
+                            : null,
+                    ]),
                 Forms\Components\Textarea::make('description')
                     ->label('商品説明')
                     ->rows(4)
@@ -40,7 +46,7 @@ class ProductResource extends Resource
                     ->directory('products'),
                 Forms\Components\Toggle::make('is_active')
                     ->label('公開する')
-                    ->required(),
+                    ->default(true),
             ]);
     }
 
@@ -50,13 +56,17 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('商品名')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('価格')
-                    ->money('JPY')
+                    ->money('JPY', divideBy: 1)
                     ->sortable(),
                 Tables\Columns\ImageColumn::make('image')
-                    ->label('画像'),
+                    ->label('画像')
+                    ->disk('public')
+                    ->square()
+                    ->defaultImageUrl(url('/images/default-product.png')),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('公開')
                     ->boolean(),
@@ -70,7 +80,11 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('公開状態')
+                    ->placeholder('すべて')
+                    ->trueLabel('公開中')
+                    ->falseLabel('非公開'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

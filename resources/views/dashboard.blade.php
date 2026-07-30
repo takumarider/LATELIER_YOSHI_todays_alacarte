@@ -21,7 +21,7 @@
                             </p>
                             <div class="mt-4 flex items-center justify-between">
                                 <span class="text-sm font-semibold text-amber-700">{{ number_format($product->price) }}円</span>
-                                <span class="text-xs text-gray-500">{{ __('在庫あり') }}</span>
+                                <livewire:product-inventory-status :product="$product" />
                             </div>
                         </div>
                     </div>

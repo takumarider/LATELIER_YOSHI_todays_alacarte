@@ -8,7 +8,11 @@ Route::get('/', function () {
 });
 
 Route::get('/alacarte', function () {
-    $products = \App\Models\Product::query()->orderBy('created_at')->get();
+    $products = \App\Models\Product::query()
+        ->where('is_active', true)
+        ->with('inventory')
+        ->orderBy('created_at')
+        ->get();
 
     return view('dashboard', ['products' => $products]);
 })->middleware(['auth', 'verified'])->name('alacarte');

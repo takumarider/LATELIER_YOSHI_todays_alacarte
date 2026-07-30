@@ -34,10 +34,54 @@ class BusinessHourResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('open_time')
                     ->label('開店時間')
-                    ->maxLength(255),
+                    ->placeholder('09:00')
+                    ->maxLength(255)
+                    ->rules([
+                        'nullable',
+                        'regex:/^(?:[01]\d|2[0-3]):[0-5]\d$/',
+                        fn ($attribute, $value, $fail) => ! filter_var(request()->input('is_closed'), FILTER_VALIDATE_BOOLEAN)
+                            && blank($value)
+                            ? $fail('営業日の場合は開店時間を入力してください。')
+                            : null,
+                        function ($attribute, $value, $fail) {
+                            $isClosed = filter_var(request()->input('is_closed'), FILTER_VALIDATE_BOOLEAN);
+                            $closeTime = request()->input('close_time');
+
+                            if ($isClosed || blank($value) || blank($closeTime)) {
+                                return;
+                            }
+
+                            $openMinutes = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+                            $closeMinutes = (int) substr($closeTime, 0, 2) * 60 + (int) substr($closeTime, 3, 2);
+
+                            if ($closeMinutes <= $openMinutes) {
+                                $fail('閉店時間は開店時間より後に設定してください。');
+                            }
+                        },
+                    ]),
                 Forms\Components\TextInput::make('close_time')
                     ->label('閉店時間')
-                    ->maxLength(255),
+                    ->placeholder('20:00')
+                    ->maxLength(255)
+                    ->rules([
+                        'nullable',
+                        'regex:/^(?:[01]\d|2[0-3]):[0-5]\d$/',
+                        function ($attribute, $value, $fail) {
+                            $isClosed = filter_var(request()->input('is_closed'), FILTER_VALIDATE_BOOLEAN);
+                            $openTime = request()->input('open_time');
+
+                            if ($isClosed || blank($value) || blank($openTime)) {
+                                return;
+                            }
+
+                            $openMinutes = (int) substr($openTime, 0, 2) * 60 + (int) substr($openTime, 3, 2);
+                            $closeMinutes = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+
+                            if ($closeMinutes <= $openMinutes) {
+                                $fail('閉店時間は開店時間より後に設定してください。');
+                            }
+                        },
+                    ]),
                 Forms\Components\Toggle::make('is_closed')
                     ->label('休業日')
                     ->required(),
@@ -65,7 +109,22 @@ class BusinessHourResource extends Resource
                     ->boolean(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('day_of_week')
+                    ->label('曜日')
+                    ->options([
+                        'monday' => '月曜日',
+                        'tuesday' => '火曜日',
+                        'wednesday' => '水曜日',
+                        'thursday' => '木曜日',
+                        'friday' => '金曜日',
+                        'saturday' => '土曜日',
+                        'sunday' => '日曜日',
+                    ]),
+                Tables\Filters\TernaryFilter::make('is_closed')
+                    ->label('休業日')
+                    ->placeholder('すべて')
+                    ->trueLabel('休業')
+                    ->falseLabel('営業'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

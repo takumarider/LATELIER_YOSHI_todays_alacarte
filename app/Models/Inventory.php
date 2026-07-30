@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\InventoryUpdated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,6 +14,11 @@ class Inventory extends Model
         'product_id',
         'quantity',
         'status',
+    ];
+
+    protected $dispatchesEvents = [
+        'updated' => InventoryUpdated::class,
+        'created' => InventoryUpdated::class,
     ];
 
     public function product()

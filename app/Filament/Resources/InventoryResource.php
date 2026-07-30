@@ -27,8 +27,20 @@ class InventoryResource extends Resource
                 Forms\Components\TextInput::make('quantity')
                     ->label('在庫数')
                     ->required()
-                    ->numeric()
-                    ->default(0),
+                    ->integer()
+                    ->minValue(0)
+                    ->default(0)
+                    ->rules([
+                        fn ($attribute, $value, $fail) => $value !== null && $value < 0
+                            ? $fail('在庫数は0以上で入力してください。')
+                            : null,
+                        fn ($attribute, $value, $fail) => request()->input('status') === 'sold_out' && (int) $value !== 0
+                            ? $fail('売り切れの場合は在庫数を0にしてください。')
+                            : null,
+                        fn ($attribute, $value, $fail) => request()->input('status') === 'in_stock' && (int) $value <= 0
+                            ? $fail('在庫ありの場合は0より大きい在庫数を設定してください。')
+                            : null,
+                    ]),
                 Forms\Components\Select::make('status')
                     ->label('状態')
                     ->options([
@@ -54,10 +66,22 @@ class InventoryResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('状態')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'in_stock' => '在庫あり',
+                        'sold_out' => '売り切れ',
+                        'limited' => '残りわずか',
+                        default => $state,
+                    })
                     ->searchable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('状態')
+                    ->options([
+                        'in_stock' => '在庫あり',
+                        'sold_out' => '売り切れ',
+                        'limited' => '残りわずか',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

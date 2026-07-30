@@ -31,14 +31,19 @@ class ReservationResource extends Resource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('phone')
                     ->label('電話番号')
-                    ->maxLength(255),
+                    ->placeholder('090-1234-5678')
+                    ->maxLength(255)
+                    ->regex('/^0\d{2,3}-\d{3,4}-\d{4}$/'),
                 Forms\Components\DatePicker::make('reservation_date')
                     ->label('予約日')
-                    ->required(),
+                    ->required()
+                    ->minDate(now()->toDateString()),
                 Forms\Components\TextInput::make('guest_count')
                     ->label('人数')
                     ->required()
-                    ->numeric()
+                    ->integer()
+                    ->minValue(1)
+                    ->maxValue(20)
                     ->default(1),
                 Forms\Components\Select::make('status')
                     ->label('ステータス')
@@ -74,10 +79,32 @@ class ReservationResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('ステータス')
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending' => '未確認',
+                        'confirmed' => '確定',
+                        'cancelled' => 'キャンセル',
+                        default => $state,
+                    })
                     ->searchable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('ステータス')
+                    ->options([
+                        'pending' => '未確認',
+                        'confirmed' => '確定',
+                        'cancelled' => 'キャンセル',
+                    ]),
+                Tables\Filters\Filter::make('reservation_date')
+                    ->form([
+                        Forms\Components\DatePicker::make('from'),
+                        Forms\Components\DatePicker::make('to'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['from'] ?? null, fn ($query, $date) => $query->whereDate('reservation_date', '>=', $date))
+                            ->when($data['to'] ?? null, fn ($query, $date) => $query->whereDate('reservation_date', '<=', $date));
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

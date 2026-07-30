@@ -21,4 +21,9 @@ class Product extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function inventory()
+    {
+        return $this->hasOne(Inventory::class);
+    }
 }
