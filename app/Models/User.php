@@ -28,6 +28,7 @@ class User extends Authenticatable
         'role',
         'nickname',
         'phone',
+        'is_admin',
     ];
 
     /**
@@ -51,12 +52,18 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'is_admin' => 'boolean',
         ];
     }
 
     /**
      * Send the password reset notification.
      */
+    public function canAccessPanel(\Filament\Panel $panel): bool
+    {
+        return $this->is_admin;
+    }
+
     public function sendPasswordResetNotification($token): void
     {
         ResetPassword::toMailUsing(function ($notifiable, $token) {
