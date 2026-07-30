@@ -12,16 +12,20 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @for ($i = 0; $i < 6; $i++)
+                @foreach ($products as $product)
                     <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 text-gray-900">
-                            <h3 class="font-semibold text-lg mb-2">{{ __('商品') }} {{ $i + 1 }}</h3>
+                            <h3 class="font-semibold text-lg mb-2">{{ $product->name }}</h3>
                             <p class="text-sm text-gray-600">
-                                {{ __('今後ここに商品名・価格・説明を表示していきます。') }}
+                                {{ $product->description ?? __('商品説明は準備中です。') }}
                             </p>
+                            <div class="mt-4 flex items-center justify-between">
+                                <span class="text-sm font-semibold text-amber-700">{{ number_format($product->price) }}円</span>
+                                <span class="text-xs text-gray-500">{{ __('在庫あり') }}</span>
+                            </div>
                         </div>
                     </div>
-                @endfor
+                @endforeach
             </div>
         </div>
     </div>

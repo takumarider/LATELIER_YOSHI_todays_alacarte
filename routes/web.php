@@ -8,7 +8,9 @@ Route::get('/', function () {
 });
 
 Route::get('/alacarte', function () {
-    return view('dashboard');
+    $products = \App\Models\Product::query()->orderBy('created_at')->get();
+
+    return view('dashboard', ['products' => $products]);
 })->middleware(['auth', 'verified'])->name('alacarte');
 
 Route::get('/dashboard', function () {
