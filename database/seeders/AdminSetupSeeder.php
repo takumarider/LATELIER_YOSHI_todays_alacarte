@@ -2,22 +2,33 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\BusinessHour;
 use App\Models\Inventory;
 use App\Models\Product;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class AdminSetupSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
+        $name = config('admin.name', 'Admin');
+        $email = config('admin.email');
+        $password = config('admin.password');
+
+        if (!$name || !$email || !$password) {
+            throw new \RuntimeException('ADMIN_NAME / ADMIN_EMAIL / ADMIN_PASSWORD が未設定です。');
+        }
+
+        User::updateOrCreate(
+            ['email' => $email],
             [
-                'name' => 'Admin',
-                'password' => bcrypt('password'),
+                'name' => $name,
+                'password' => Hash::make($password),
+                'role' => UserRole::ADMIN->value,
                 'is_admin' => true,
             ]
         );
