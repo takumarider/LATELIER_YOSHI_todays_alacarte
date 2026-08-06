@@ -30,16 +30,26 @@ class InventoryResource extends Resource
                     ->integer()
                     ->minValue(0)
                     ->default(0)
-                    ->rules([
-                        fn ($attribute, $value, $fail) => $value !== null && $value < 0
-                            ? $fail('在庫数は0以上で入力してください。')
-                            : null,
-                        fn ($attribute, $value, $fail) => request()->input('status') === 'sold_out' && (int) $value !== 0
-                            ? $fail('売り切れの場合は在庫数を0にしてください。')
-                            : null,
-                        fn ($attribute, $value, $fail) => request()->input('status') === 'in_stock' && (int) $value <= 0
-                            ? $fail('在庫ありの場合は0より大きい在庫数を設定してください。')
-                            : null,
+                    ->rules(fn (Forms\Get $get): array => [
+                        function ($attribute, $value, $fail): void {
+                            if ($value !== null && $value < 0) {
+                                $fail('在庫数は0以上で入力してください。');
+                            }
+                        },
+                        function ($attribute, $value, $fail) use ($get): void {
+                            $status = $get('status');
+
+                            if ($status === 'sold_out' && (int) $value !== 0) {
+                                $fail('売り切れの場合は在庫数を0にしてください。');
+                            }
+                        },
+                        function ($attribute, $value, $fail) use ($get): void {
+                            $status = $get('status');
+
+                            if ($status === 'in_stock' && (int) $value <= 0) {
+                                $fail('在庫ありの場合は0より大きい在庫数を設定してください。');
+                            }
+                        },
                     ]),
                 Forms\Components\Select::make('status')
                     ->label('状態')

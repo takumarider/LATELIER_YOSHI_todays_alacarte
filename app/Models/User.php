@@ -66,6 +66,11 @@ class User extends Authenticatable implements FilamentUser
         return (bool) $this->is_admin;
     }
 
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
     public function sendPasswordResetNotification($token): void
     {
         ResetPassword::toMailUsing(function ($notifiable, $token) {

@@ -31,10 +31,12 @@ class ProductResource extends Resource
                     ->prefix('¥')
                     ->minValue(100)
                     ->step(100)
-                    ->rules([
-                        fn ($attribute, $value, $fail) => $value !== null && $value % 100 !== 0
-                            ? $fail('価格は100円単位で入力してください。')
-                            : null,
+                    ->rules(fn (): array => [
+                        function ($attribute, $value, $fail): void {
+                            if ($value !== null && $value % 100 !== 0) {
+                                $fail('価格は100円単位で入力してください。');
+                            }
+                        },
                     ]),
                 Forms\Components\Textarea::make('description')
                     ->label('商品説明')
@@ -43,10 +45,16 @@ class ProductResource extends Resource
                 Forms\Components\FileUpload::make('image')
                     ->label('画像')
                     ->image()
-                    ->directory('products'),
+                    ->disk('public')
+                    ->directory('products')
+                    ->maxSize(5120),
                 Forms\Components\Toggle::make('is_active')
                     ->label('公開する')
                     ->default(true),
+                Forms\Components\DatePicker::make('sale_date')
+                    ->label('販売日（空欄＝本日分）')
+                    ->minDate(now()->addDay())
+                    ->native(false),
             ]);
     }
 

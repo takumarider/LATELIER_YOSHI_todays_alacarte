@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Product;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ProductInventoryStatus extends Component
@@ -10,11 +11,7 @@ class ProductInventoryStatus extends Component
     public Product $product;
     public string $status = 'sold_out';
     public int $quantity = 0;
-
-    protected $listeners = [
-        'echo:inventory,inventory.updated' => 'refreshInventory',
-        'inventory-updated' => 'refreshInventory',
-    ];
+    public bool $hasError = false;
 
     public function mount(Product $product): void
     {
@@ -22,19 +19,25 @@ class ProductInventoryStatus extends Component
         $this->refreshInventory();
     }
 
+    #[On('inventory-updated')]
     public function refreshInventory(): void
     {
-        $inventory = $this->product->inventory()->first();
+        try {
+            $inventory = $this->product->inventory()->first();
 
-        if (! $inventory) {
-            $this->status = 'sold_out';
-            $this->quantity = 0;
-            return;
+            if (! $inventory) {
+                $this->status = 'sold_out';
+                $this->quantity = 0;
+                $this->hasError = false;
+                return;
+            }
+
+            $this->quantity = (int) $inventory->quantity;
+            $this->status = $inventory->status;
+            $this->hasError = false;
+        } catch (\Throwable) {
+            $this->hasError = true;
         }
-
-        $this->quantity = (int) $inventory->quantity;
-        $this->status = $inventory->status;
-        $this->dispatch('$refresh');
     }
 
     public function render()

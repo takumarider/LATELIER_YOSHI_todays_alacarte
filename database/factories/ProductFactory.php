@@ -15,11 +15,12 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word(),
-            'price' => $this->faker->numberBetween(500, 5000),
+            'name'        => $this->faker->word(),
+            'price'       => $this->faker->numberBetween(500, 5000),
             'description' => $this->faker->sentence(),
-            'image' => null,
-            'is_active' => true,
+            'image'       => null,
+            'is_active'   => true,
+            'sale_date'   => null,
         ];
     }
 }

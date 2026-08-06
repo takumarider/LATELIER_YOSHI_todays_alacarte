@@ -55,4 +55,26 @@ class AlacarteInventoryStatusTest extends TestCase
         $response->assertSee('売り切れ商品');
         $response->assertSee('SOLD OUT');
     }
+
+    public function test_alacarte_page_shows_limited_state(): void
+    {
+        $user = User::factory()->create();
+
+        $product = Product::factory()->create([
+            'name' => '残り少ない商品',
+            'price' => 1200,
+        ]);
+
+        Inventory::factory()->create([
+            'product_id' => $product->id,
+            'quantity' => 2,
+            'status' => 'limited',
+        ]);
+
+        $response = $this->actingAs($user)->get('/alacarte');
+
+        $response->assertOk();
+        $response->assertSee('残り少ない商品');
+        $response->assertSee('残りわずか');
+    }
 }

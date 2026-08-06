@@ -36,16 +36,19 @@ class BusinessHourResource extends Resource
                     ->label('開店時間')
                     ->placeholder('09:00')
                     ->maxLength(255)
-                    ->rules([
+                    ->rules(fn (Forms\Get $get): array => [
                         'nullable',
                         'regex:/^(?:[01]\d|2[0-3]):[0-5]\d$/',
-                        fn ($attribute, $value, $fail) => ! filter_var(request()->input('is_closed'), FILTER_VALIDATE_BOOLEAN)
-                            && blank($value)
-                            ? $fail('営業日の場合は開店時間を入力してください。')
-                            : null,
-                        function ($attribute, $value, $fail) {
-                            $isClosed = filter_var(request()->input('is_closed'), FILTER_VALIDATE_BOOLEAN);
-                            $closeTime = request()->input('close_time');
+                        function ($attribute, $value, $fail) use ($get): void {
+                            $isClosed = filter_var($get('is_closed'), FILTER_VALIDATE_BOOLEAN);
+
+                            if (! $isClosed && blank($value)) {
+                                $fail('営業日の場合は開店時間を入力してください。');
+                            }
+                        },
+                        function ($attribute, $value, $fail) use ($get): void {
+                            $isClosed = filter_var($get('is_closed'), FILTER_VALIDATE_BOOLEAN);
+                            $closeTime = $get('close_time');
 
                             if ($isClosed || blank($value) || blank($closeTime)) {
                                 return;
@@ -63,12 +66,12 @@ class BusinessHourResource extends Resource
                     ->label('閉店時間')
                     ->placeholder('20:00')
                     ->maxLength(255)
-                    ->rules([
+                    ->rules(fn (Forms\Get $get): array => [
                         'nullable',
                         'regex:/^(?:[01]\d|2[0-3]):[0-5]\d$/',
-                        function ($attribute, $value, $fail) {
-                            $isClosed = filter_var(request()->input('is_closed'), FILTER_VALIDATE_BOOLEAN);
-                            $openTime = request()->input('open_time');
+                        function ($attribute, $value, $fail) use ($get): void {
+                            $isClosed = filter_var($get('is_closed'), FILTER_VALIDATE_BOOLEAN);
+                            $openTime = $get('open_time');
 
                             if ($isClosed || blank($value) || blank($openTime)) {
                                 return;
